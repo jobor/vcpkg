@@ -1,6 +1,7 @@
 [cmdletbinding()]
 param([string]$targetBinary, [string]$installedDir, [string]$tlogFile, [string]$copiedFilesLog)
 
+$VerbosePreference = 'Continue'
 $g_searched = @{}
 # Note: installedDir is actually the bin\ directory.
 $g_install_root = Split-Path $installedDir -parent
