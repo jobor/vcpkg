@@ -54,8 +54,17 @@ if(VCPKG_TARGET_IS_IOS)
 endif()
 
 vcpkg_list(SET LD_VERSION_SCRIPT_OPTION)
-if(VCPKG_TARGET_IS_ANDROID)
+if(VCPKG_TARGET_IS_ANDROID OR VCPKG_TARGET_IS_OHOS)
     vcpkg_list(APPEND LD_VERSION_SCRIPT_OPTION "-Dld-version-script=OFF")
+    if(VCPKG_TARGET_IS_OHOS)
+        # genout.cmake invokes the compiler via execute_process, bypassing
+        # CMAKE_C_COMPILER_TARGET.  Inject --target so the cross-sysroot
+        # headers resolve correctly.
+        vcpkg_cmake_get_vars(cmake_vars_file)
+        include("${cmake_vars_file}")
+        string(APPEND VCPKG_C_FLAGS " --target=${VCPKG_DETECTED_CMAKE_C_COMPILER_TARGET}")
+        string(APPEND VCPKG_CXX_FLAGS " --target=${VCPKG_DETECTED_CMAKE_CXX_COMPILER_TARGET}")
+    endif()
     if(VCPKG_TARGET_ARCHITECTURE STREQUAL "arm")
         vcpkg_cmake_get_vars(cmake_vars_file)
         include("${cmake_vars_file}")
@@ -68,7 +77,7 @@ if(VCPKG_TARGET_IS_ANDROID)
     endif()
 endif()
 
-if(VCPKG_TARGET_ARCHITECTURE STREQUAL "arm64" AND VCPKG_TARGET_IS_LINUX)
+if(VCPKG_TARGET_ARCHITECTURE STREQUAL "arm64" AND (VCPKG_TARGET_IS_LINUX OR VCPKG_TARGET_IS_OHOS))
   vcpkg_list(APPEND LIBPNG_HARDWARE_OPTIMIZATIONS_OPTION "-DPNG_ARM_NEON=on")
 endif()
 

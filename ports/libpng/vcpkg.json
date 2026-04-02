@@ -16,7 +16,7 @@
     {
       "name": "vcpkg-cmake-get-vars",
       "host": true,
-      "platform": "arm & android"
+      "platform": "(arm & android) | ohos"
     },
     "zlib"
   ],
