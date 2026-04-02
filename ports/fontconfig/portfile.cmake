@@ -58,6 +58,27 @@ endif()
 
 vcpkg_install_meson(ADD_BIN_TO_PATH)
 
+# OHOS does not support versioned sonames.  Meson's soversion/version kwargs
+# produce libfontconfig.so -> .so.1 -> .so.1.16.0 symlink chains that must be
+# collapsed to a single unversioned libfontconfig.so.
+if(VCPKG_TARGET_IS_OHOS AND VCPKG_LIBRARY_LINKAGE STREQUAL "dynamic")
+    foreach(libdir "${CURRENT_PACKAGES_DIR}/lib" "${CURRENT_PACKAGES_DIR}/debug/lib")
+        if(NOT IS_DIRECTORY "${libdir}")
+            continue()
+        endif()
+        file(GLOB versioned_libs "${libdir}/*.so.*")
+        foreach(lib IN LISTS versioned_libs)
+            if(IS_SYMLINK "${lib}")
+                file(REMOVE "${lib}")
+            else()
+                string(REGEX REPLACE "\\.so\\..*$" ".so" unversioned "${lib}")
+                file(REMOVE "${unversioned}")
+                file(RENAME "${lib}" "${unversioned}")
+            endif()
+        endforeach()
+    endforeach()
+endif()
+
 vcpkg_copy_pdbs()
 #Fix missing libintl static dependency
 if("nls" IN_LIST FEATURES AND VCPKG_TARGET_IS_WINDOWS AND NOT VCPKG_TARGET_IS_MINGW)

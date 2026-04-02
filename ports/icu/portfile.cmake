@@ -75,6 +75,27 @@ vcpkg_make_configure(
 )
 vcpkg_make_install(OPTIONS ${BUILD_OPTIONS})
 
+# OHOS does not support versioned sonames.  ICU's autotools build produces
+# libicuuc.so -> .so.78 -> .so.78.2 symlink chains that must be collapsed to
+# a single unversioned .so.
+if(VCPKG_TARGET_IS_OHOS AND VCPKG_LIBRARY_LINKAGE STREQUAL "dynamic")
+    foreach(libdir "${CURRENT_PACKAGES_DIR}/lib" "${CURRENT_PACKAGES_DIR}/debug/lib")
+        if(NOT IS_DIRECTORY "${libdir}")
+            continue()
+        endif()
+        file(GLOB versioned_libs "${libdir}/*.so.*")
+        foreach(lib IN LISTS versioned_libs)
+            if(IS_SYMLINK "${lib}")
+                file(REMOVE "${lib}")
+            else()
+                string(REGEX REPLACE "\\.so\\..*$" ".so" unversioned "${lib}")
+                file(REMOVE "${unversioned}")
+                file(RENAME "${lib}" "${unversioned}")
+            endif()
+        endforeach()
+    endforeach()
+endif()
+
 file(REMOVE_RECURSE
     "${CURRENT_PACKAGES_DIR}/share"
     "${CURRENT_PACKAGES_DIR}/debug/share"
