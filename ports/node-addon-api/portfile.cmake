@@ -1,9 +1,16 @@
+vcpkg_list(SET PATCHES)
+if(VCPKG_TARGET_IS_OHOS)
+    vcpkg_list(APPEND PATCHES ohos-napi-workarounds.patch)
+endif()
+
 vcpkg_from_github(
   OUT_SOURCE_PATH SOURCE_PATH
   REPO nodejs/node-addon-api
   REF "v${VERSION}"
   SHA512 ab701bff45c8f023a96f2be5ac5806b0debd24443e0b2188982ebcda892ae3b6935ba90451b22cae67847636aeeda1209e189b2fa2376158f7c48c5919a3a6e5
   HEAD_REF main
+  PATCHES
+    ${PATCHES}
 )
 
 file(COPY "${SOURCE_PATH}/napi.h" DESTINATION "${CURRENT_PACKAGES_DIR}/include")
